@@ -22,20 +22,72 @@
 // Two pairs score 4 (♥4, ♦4 and ♠5, ♣5).
 // Total 24.
 
+#include <algorithm>
+#include <cctype>
 #include <iostream>
+#include <ranges>
+#include <vector>
 
 using namespace std;
 
 
-void test(const string& a, const char* b)
+void test(int actual, int expected)
 {
-    if (a == string{b})
+    if (expected == actual)
         cout << "Test passed\n";
     else
-        cerr << "Test FAILED! : \"" << a << "\" != \"" << b << "\"\n";
+        cerr << "Test FAILED! : expected " << expected << ", got " << actual << '\n';
+}
+
+
+int score(string_view s)
+{
+    constexpr char digits[]{ "0123456789" };
+    vector<string_view> parts;
+    size_t pos = 0;
+    while (pos != string::npos)
+    {
+        pos = s.find_first_of(digits, pos);
+cout << "pos " << pos;
+        if (pos != string::npos)
+        {
+            auto pos2 = s.find_first_not_of(digits, pos);
+cout << "    pos2 " << pos2;
+            auto part = s.substr(pos, pos2 - pos);
+cout << " part " << part << '\n';
+            parts.push_back(part);
+            //try
+            //{
+                //auto value = stoi(string{s});
+                //values.push_back(value);
+            //}
+            //catch(...) {}
+            pos = pos2;
+        }
+else cout << '\n';
+
+    }
+
+    do
+    {
+        for (auto p : parts)
+        {
+            cout << p << ',';
+        }
+        cout << endl;
+    }
+    while (std::ranges::next_permutation(parts).found);
+
+    return 0;
 }
 
 int main()
 {
+/// @todo This isn't creating more than 1 permutation because all the 5s are equivalent.
+/// We need to give each value a suit, so that comparison can include suites so the 5s
+/// don't compare equal. Then they should permute properly?
+
+    test(score("♠5, ♣5, ♥5, ♦5, ♣10"), 14);     // Get 15s working
+
     return 0;
 }
