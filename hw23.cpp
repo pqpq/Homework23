@@ -23,9 +23,12 @@
 // Total 24.
 
 #include <algorithm>
+#include <array>
 #include <cctype>
 #include <iostream>
 #include <ranges>
+#include <set>
+#include <utility>
 #include <vector>
 
 using namespace std;
@@ -39,44 +42,93 @@ void test(int actual, int expected)
         cerr << "Test FAILED! : expected " << expected << ", got " << actual << '\n';
 }
 
-
-int score(string_view s)
+struct Card
 {
+    int value{};
+    char suit{};
+    auto operator<=>(const Card& other) const = default;
+};
+
+
+vector<Card> Hand(string_view s)
+{
+    vector<Card> cards;
+
+    constexpr array<string_view, 4> suitsUnicode{ "♣", "♦", "♥", "♠" };
+    constexpr array<char, 4> suitsAscii{ 'c','d','h','s' };
     constexpr char digits[]{ "0123456789" };
-    vector<string_view> parts;
-    size_t pos = 0;
-    while (pos != string::npos)
+
+    while (!s.empty())
     {
-        pos = s.find_first_of(digits, pos);
-cout << "pos " << pos;
+        for (size_t i = 0; i < suitsUnicode.size(); ++i)
+        {
+            if (s.starts_with(suitsUnicode[i]))
+            {
+                cards.push_back({ .suit = suitsAscii[i] });
+                s = s.substr(suitsUnicode[i].size());
+            }
+        }
+
+        if (s.find_first_of(digits) != 0)
+        {
+            s.remove_prefix(1);
+            continue;
+        }
+
+        auto pos = s.find_first_not_of(digits);
+        auto part = s.substr(0, pos);
+        try
+        {
+            auto value = stoi(string{part});
+            cards.back().value = value;
+        }
+        catch(...) {}
         if (pos != string::npos)
         {
-            auto pos2 = s.find_first_not_of(digits, pos);
-cout << "    pos2 " << pos2;
-            auto part = s.substr(pos, pos2 - pos);
-cout << " part " << part << '\n';
-            parts.push_back(part);
-            //try
-            //{
-                //auto value = stoi(string{s});
-                //values.push_back(value);
-            //}
-            //catch(...) {}
-            pos = pos2;
+            s = s.substr(pos);
         }
-else cout << '\n';
-
+        else
+        {
+            s = {};
+        }
     }
+    return cards;
+}
 
+
+int Score(string_view s)
+{
+cout << s << '\n';
+    auto hand = Hand(s);
+
+    set<pair<Card, Card>> pairs;
+#if 0
     do
     {
-        for (auto p : parts)
+        for (auto c : hand)
         {
-            cout << p << ',';
+            cout << c.value << c.suit << ',';
         }
         cout << endl;
+        pairs.insert({hand[0], hand[1]});
     }
-    while (std::ranges::next_permutation(parts).found);
+    while (std::ranges::next_permutation(hand).found);
+
+#endif
+
+    for (auto i : views::iota(0u, hand.size()))
+    {
+        for (auto j : views::iota(i+1, hand.size()))
+        {
+            cout << i << ", " << j << '\n';
+            pairs.insert({hand[i], hand[j]});
+        }
+    }
+
+    for (const auto& p : pairs)
+    {
+cout << p.first.value << p.first.suit << ',' << p.second.value << p.second.suit << ',' << '\n';
+    }
 
     return 0;
 }
@@ -87,7 +139,7 @@ int main()
 /// We need to give each value a suit, so that comparison can include suites so the 5s
 /// don't compare equal. Then they should permute properly?
 
-    test(score("♠5, ♣5, ♥5, ♦5, ♣10"), 14);     // Get 15s working
+    test(Score("♠5, ♣5, ♥5, ♦5, ♣10"), 14);     // Get 15s working
 
     return 0;
 }
