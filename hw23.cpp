@@ -65,56 +65,44 @@ void test(int actual, int expected)
 
 struct Card
 {
-    int value{};
+    int rank{};
     char suit{};
     auto operator<=>(const Card& other) const = default;
 };
 
 ostream& operator<<(ostream& o, const Card& c)
 {
-    return o << c.value << c.suit;
+    return o << c.rank << c.suit;
 }
 
 vector<Card> Hand(string_view s)
 {
     vector<Card> cards;
 
-    constexpr array<string_view, 4> suitsUnicode{ "♣", "♦", "♥", "♠" };
-    constexpr array<char, 4> suitsAscii{ 'c','d','h','s' };
-    constexpr char digits[]{ "0123456789" };
+    constexpr array<string_view, 13> ranks =
+    {
+        "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" 
+    };
 
     while (!s.empty())
     {
-        for (size_t i = 0; i < suitsUnicode.size(); ++i)
+        bool found{};
+        for (size_t i = 0; i < ranks.size(); ++i)
         {
-            if (s.starts_with(suitsUnicode[i]))
+            if (s.starts_with(ranks[i]))
             {
-                cards.push_back({ .suit = suitsAscii[i] });
-                s = s.substr(suitsUnicode[i].size());
+                cards.push_back({ .rank = static_cast<int>(i + 1) });
+                s = s.substr(ranks[i].size());
+                cards.back().suit = s[0];
+                s.remove_prefix(1);
+                found = true;
+                break;
             }
         }
 
-        if (s.find_first_of(digits) != 0)
+        if (!found)
         {
             s.remove_prefix(1);
-            continue;
-        }
-
-        auto pos = s.find_first_not_of(digits);
-        auto part = s.substr(0, pos);
-        try
-        {
-            auto value = stoi(string{part});
-            cards.back().value = value;
-        }
-        catch(...) {}
-        if (pos != string::npos)
-        {
-            s = s.substr(pos);
-        }
-        else
-        {
-            s = {};
         }
     }
     return cards;
@@ -137,22 +125,22 @@ vector<vector<Card>> CombCards(const vector<Card>& hand, int K)
 
 int Score(string_view s)
 {
-    int score{};
 cout << s << '\n';
+
+    int score{};
+
     auto hand = Hand(s);
-
-
-    auto pairs = CombCards(hand,2);
+    auto pairs = CombCards(hand,2 );
 
     for (const auto& p : pairs)
     {
 cout << p[0] << ',' << p[1] << '\n';
-        if (p[0].value == p[1].value)
+        if (p[0].rank == p[1].rank)
         {
             score += 2;
             cout << "Pair: " << p[0] << ", " << p[1] << '\n';
         }
-        if (p[0].value + p[1].value == 15)
+        if (p[0].rank + p[1].rank == 15)
         {
             score += 2;
             cout << "15: " << p[0] << ", " << p[1] << '\n';
@@ -164,11 +152,8 @@ cout << p[0] << ',' << p[1] << '\n';
 
 int main()
 {
-/// @todo This isn't creating more than 1 permutation because all the 5s are equivalent.
-/// We need to give each value a suit, so that comparison can include suites so the 5s
-/// don't compare equal. Then they should permute properly?
-
-    test(Score("♠5, ♣5, ♥5, ♦5, ♣10"), 14);     // Get 15s working
+    // 20 for 2 card 15s and pairs. Should be 28 in total.
+    test(Score("5S, 5C, 5H, 5D, 10C"), 20);
 
     return 0;
 }
