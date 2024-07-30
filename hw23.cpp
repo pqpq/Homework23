@@ -33,6 +33,27 @@
 
 using namespace std;
 
+// https://rosettacode.org/wiki/Combinations#C++
+vector<vector<int>> Comb(int N, int K)
+{
+    vector<vector<int>> combinations;
+
+    string bitmask(K, 1); // K leading 1's
+    bitmask.resize(N, 0); // N-K trailing 0's
+
+    do // permute bitmask
+    {
+        vector<int> values;
+        for (int i = 0; i < N; ++i) // [0..N-1] integers
+        {
+            if (bitmask[i]) values.push_back(i);
+        }
+        combinations.push_back(values);
+    } while (prev_permutation(bitmask.begin(), bitmask.end()));
+
+    return combinations;
+}
+
 
 void test(int actual, int expected)
 {
@@ -49,6 +70,10 @@ struct Card
     auto operator<=>(const Card& other) const = default;
 };
 
+ostream& operator<<(ostream& o, const Card& c)
+{
+    return o << c.value << c.suit;
+}
 
 vector<Card> Hand(string_view s)
 {
@@ -95,42 +120,46 @@ vector<Card> Hand(string_view s)
     return cards;
 }
 
+vector<vector<Card>> CombCards(const vector<Card>& hand, int K)
+{
+    vector<vector<Card>> results;
+
+    const auto combinations = Comb(hand.size(), K);
+    for(const auto& c : combinations)
+    {
+        vector<Card> cards;
+        ranges::transform(c, back_inserter(cards), [&](int i){ return hand[i]; });
+        results.push_back(cards);
+    }
+    return results;
+}
+
 
 int Score(string_view s)
 {
+    int score{};
 cout << s << '\n';
     auto hand = Hand(s);
 
-    set<pair<Card, Card>> pairs;
-#if 0
-    do
-    {
-        for (auto c : hand)
-        {
-            cout << c.value << c.suit << ',';
-        }
-        cout << endl;
-        pairs.insert({hand[0], hand[1]});
-    }
-    while (std::ranges::next_permutation(hand).found);
 
-#endif
-
-    for (auto i : views::iota(0u, hand.size()))
-    {
-        for (auto j : views::iota(i+1, hand.size()))
-        {
-            cout << i << ", " << j << '\n';
-            pairs.insert({hand[i], hand[j]});
-        }
-    }
+    auto pairs = CombCards(hand,2);
 
     for (const auto& p : pairs)
     {
-cout << p.first.value << p.first.suit << ',' << p.second.value << p.second.suit << ',' << '\n';
+cout << p[0] << ',' << p[1] << '\n';
+        if (p[0].value == p[1].value)
+        {
+            score += 2;
+            cout << "Pair: " << p[0] << ", " << p[1] << '\n';
+        }
+        if (p[0].value + p[1].value == 15)
+        {
+            score += 2;
+            cout << "15: " << p[0] << ", " << p[1] << '\n';
+        }
     }
 
-    return 0;
+    return score;
 }
 
 int main()
