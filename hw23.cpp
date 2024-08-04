@@ -134,7 +134,7 @@ int Score(string_view s)
 
     auto hand = Hand(s);
 
-cout << "Hand: ";
+cout << "\nHand: ";
 for (const auto& card : hand)
 {
     cout << card << ", ";
@@ -190,6 +190,12 @@ int main()
     // 4 for 15s (J+5, J+2+3)
     // 3 for run (1, 2, 3)
     test(Score("JS, 5C, AH, 2D, 3C"), 7);
+
+    // Example from the article
+    // Four ways of making 15 scores 8 (♠6 ♠5 ♥4; ♠6 ♠5 ♦4; ♠6 ♣5 ♥4; ♠6, ♣5, ♦4).
+    // Four runs of 6 5 4 score 12 (♠6 ♠5 ♥4; ♠6 ♠5 ♦4; ♠6 ♣5 ♥4; ♠6 ♣5 ♦4).
+    // Two pairs score 4 (♥4, ♦4 and ♠5, ♣5). Total 24.
+    test(Score("6S, 5S, 4H, 4D, 5C"), 24);
 
     return 0;
 }
