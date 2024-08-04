@@ -67,12 +67,15 @@ struct Card
 {
     int rank{};
     char suit{};
+    // these are after rank and suit so they aren't involved in operator<=>
+    int value{};
+    string_view name;
     auto operator<=>(const Card& other) const = default;
 };
 
 ostream& operator<<(ostream& o, const Card& c)
 {
-    return o << c.rank << c.suit;
+    return o << c.name << c.suit;
 }
 
 vector<Card> Hand(string_view s)
@@ -91,9 +94,11 @@ vector<Card> Hand(string_view s)
         {
             if (s.starts_with(ranks[i]))
             {
-                cards.push_back({ .rank = static_cast<int>(i + 1) });
+                const auto rank = static_cast<int>(i + 1);
+                cards.push_back({ .rank = rank, .name = s.substr(0, ranks[i].size()) });
                 s = s.substr(ranks[i].size());
                 cards.back().suit = s[0];
+                cards.back().value = min(10, rank);
                 s.remove_prefix(1);
                 found = true;
                 break;
@@ -125,11 +130,16 @@ vector<vector<Card>> CombCards(const vector<Card>& hand, int K)
 
 int Score(string_view s)
 {
-cout << s << '\n';
-
     int score{};
 
     auto hand = Hand(s);
+
+cout << "Hand: ";
+for (const auto& card : hand)
+{
+    cout << card << ", ";
+}
+cout << '\n';
 
     auto pairs = CombCards(hand, 2);
     for (const auto& p : pairs)
@@ -140,7 +150,7 @@ cout << p[0] << ',' << p[1] << '\n';
             score += 2;
             cout << "Pair: " << p[0] << ", " << p[1] << '\n';
         }
-        if (p[0].rank + p[1].rank == 15)
+        if (p[0].value + p[1].value == 15)
         {
             score += 2;
             cout << "15: " << p[0] << ", " << p[1] << '\n';
@@ -150,13 +160,14 @@ cout << p[0] << ',' << p[1] << '\n';
     auto triples = CombCards(hand, 3);
     for (auto& t : triples)
     {
-        if (t[0].rank + t[1].rank + t[2].rank == 15)
+        ranges::sort(t);
+cout << t[0] << ',' << t[1] << ',' << t[2] << '\n';
+        if (t[0].value + t[1].value + t[2].value == 15)
         {
             score += 2;
             cout << "15: " << t[0] << ", " << t[1] << ", " << t[2] << '\n';
         }
-        ranges::sort(t);
-        if (t[2].rank == t[1].rank + 1 && t[1].rank == t[0].rank + 1 )
+        if ((t[0].rank + 1 == t[1].rank) && (t[1].rank + 1 == t[2].rank))
         {
             score += 3;
             cout << "Run of three: " << t[0] << ", " << t[1] << ", " << t[2] << '\n';
@@ -178,7 +189,7 @@ int main()
 
     // 4 for 15s (J+5, J+2+3)
     // 3 for run (1, 2, 3)
-    test(Score("JS, 5C, 1H, 2D, 3C"), 5);
+    test(Score("JS, 5C, AH, 2D, 3C"), 7);
 
     return 0;
 }
