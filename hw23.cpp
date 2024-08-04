@@ -130,8 +130,8 @@ cout << s << '\n';
     int score{};
 
     auto hand = Hand(s);
-    auto pairs = CombCards(hand,2 );
 
+    auto pairs = CombCards(hand, 2);
     for (const auto& p : pairs)
     {
 cout << p[0] << ',' << p[1] << '\n';
@@ -147,13 +147,38 @@ cout << p[0] << ',' << p[1] << '\n';
         }
     }
 
+    auto triples = CombCards(hand, 3);
+    for (auto& t : triples)
+    {
+        if (t[0].rank + t[1].rank + t[2].rank == 15)
+        {
+            score += 2;
+            cout << "15: " << t[0] << ", " << t[1] << ", " << t[2] << '\n';
+        }
+        ranges::sort(t);
+        if (t[2].rank == t[1].rank + 1 && t[1].rank == t[0].rank + 1 )
+        {
+            score += 3;
+            cout << "Run of three: " << t[0] << ", " << t[1] << ", " << t[2] << '\n';
+        }
+        // Don't need to score the pairs because they will already have been done.
+    }
+
+    // If we find a run of 4, only add 1, because the 3 will already have been scored.
+
     return score;
 }
 
 int main()
 {
-    // 20 for 2 card 15s and pairs. Should be 28 in total.
-    test(Score("5S, 5C, 5H, 5D, 10C"), 20);
+    // 8 for 2 card 15s (10 and 5)
+    // 8 for 3 card 15s (3 x 5)
+    // 12 for 4 5s (6 sets of pairs)
+    test(Score("5S, 5C, 5H, 5D, 10C"), 28);
+
+    // 4 for 15s (J+5, J+2+3)
+    // 3 for run (1, 2, 3)
+    test(Score("JS, 5C, 1H, 2D, 3C"), 5);
 
     return 0;
 }
