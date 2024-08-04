@@ -70,13 +70,13 @@ struct Card
     char suit{};
     // these are after rank and suit so they aren't involved in operator<=>
     int value{};
-    string_view name;
+    string_view printable;
     auto operator<=>(const Card& other) const = default;
 };
 
 ostream& operator<<(ostream& o, const Card& c)
 {
-    return o << c.name << c.suit;
+    return o << c.printable;
 }
 
 int operator+(int a, const Card& b)
@@ -102,7 +102,8 @@ vector<Card> Hand(string_view s)
             if (s.starts_with(ranks[i]))
             {
                 const auto rank = static_cast<int>(i + 1);
-                cards.push_back({ .rank = rank, .name = s.substr(0, ranks[i].size()) });
+                cards.push_back({ .rank = rank });
+                cards.back().printable = s.substr(0, ranks[i].size() + 1); // include the suit
                 s = s.substr(ranks[i].size());
                 cards.back().suit = s[0];
                 cards.back().value = min(10, rank);
