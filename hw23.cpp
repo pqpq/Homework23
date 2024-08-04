@@ -152,28 +152,45 @@ int Fifteens(const vector<Card>& cards)
     return 0;
 }
 
+int Pairs(const vector<Card>& cards)    // assumes size of 2
+{
+    if (cards[0].rank == cards[1].rank)
+    {
+        Dump("Pair", cards);
+        return 2;
+    }
+    return 0;
+}
+
+int Runs(const vector<Card>& cards)    // should be 3 or more
+{
+    bool run = true;
+    for (size_t i = 1; i < cards.size(); ++i)
+    {
+        run = run && cards[i].rank == cards[i-1].rank + 1;
+    }
+    if (run)
+    {
+        Dump("Run", cards);
+        return static_cast<int>(cards.size());
+    }
+    return 0;
+}
+
+
 int Score(string_view s)
 {
     int score{};
 
     auto hand = Hand(s);
 
-cout << "\nHand: ";
-for (const auto& card : hand)
-{
-    cout << card << ", ";
-}
-cout << '\n';
+Dump("Hand", hand);
 
     auto pairs = CombCards(hand, 2);
     for (const auto& p : pairs)
     {
-cout << p[0] << ',' << p[1] << '\n';
-        if (p[0].rank == p[1].rank)
-        {
-            score += 2;
-            cout << "Pair: " << p[0] << ", " << p[1] << '\n';
-        }
+Dump("2", p);
+        score += Pairs(p);
         score += Fifteens(p);
     }
 
@@ -181,13 +198,9 @@ cout << p[0] << ',' << p[1] << '\n';
     for (auto& t : triples)
     {
         ranges::sort(t);
-cout << t[0] << ',' << t[1] << ',' << t[2] << '\n';
+Dump("3", t);
         score += Fifteens(t);
-        if ((t[0].rank + 1 == t[1].rank) && (t[1].rank + 1 == t[2].rank))
-        {
-            score += 3;
-            cout << "Run of three: " << t[0] << ", " << t[1] << ", " << t[2] << '\n';
-        }
+        score += Runs(t);
         // Don't need to score the pairs because they will already have been done.
     }
 
