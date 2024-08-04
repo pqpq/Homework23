@@ -26,6 +26,7 @@
 #include <array>
 #include <cctype>
 #include <iostream>
+#include <numeric>
 #include <ranges>
 #include <set>
 #include <utility>
@@ -78,6 +79,12 @@ ostream& operator<<(ostream& o, const Card& c)
     return o << c.name << c.suit;
 }
 
+int operator+(int a, const Card& b)
+{
+    return a + b.value;
+}
+
+
 vector<Card> Hand(string_view s)
 {
     vector<Card> cards;
@@ -127,6 +134,22 @@ vector<vector<Card>> CombCards(const vector<Card>& hand, int K)
     return results;
 }
 
+void Dump(const char* context, const vector<Card>& cards)
+{
+    cout << context << ": ";
+    ranges::for_each(cards, [&](const Card& c){ cout << c << ','; });
+    cout << '\n';
+}
+
+int Fifteens(const vector<Card>& cards)
+{
+    if (accumulate(cards.begin(), cards.end(), 0) == 15)
+    {
+        Dump("15", cards);
+        return 2;
+    }
+    return 0;
+}
 
 int Score(string_view s)
 {
@@ -150,11 +173,7 @@ cout << p[0] << ',' << p[1] << '\n';
             score += 2;
             cout << "Pair: " << p[0] << ", " << p[1] << '\n';
         }
-        if (p[0].value + p[1].value == 15)
-        {
-            score += 2;
-            cout << "15: " << p[0] << ", " << p[1] << '\n';
-        }
+        score += Fifteens(p);
     }
 
     auto triples = CombCards(hand, 3);
@@ -162,11 +181,7 @@ cout << p[0] << ',' << p[1] << '\n';
     {
         ranges::sort(t);
 cout << t[0] << ',' << t[1] << ',' << t[2] << '\n';
-        if (t[0].value + t[1].value + t[2].value == 15)
-        {
-            score += 2;
-            cout << "15: " << t[0] << ", " << t[1] << ", " << t[2] << '\n';
-        }
+        score += Fifteens(t);
         if ((t[0].rank + 1 == t[1].rank) && (t[1].rank + 1 == t[2].rank))
         {
             score += 3;
@@ -196,6 +211,14 @@ int main()
     // Four runs of 6 5 4 score 12 (♠6 ♠5 ♥4; ♠6 ♠5 ♦4; ♠6 ♣5 ♥4; ♠6 ♣5 ♦4).
     // Two pairs score 4 (♥4, ♦4 and ♠5, ♣5). Total 24.
     test(Score("6S, 5S, 4H, 4D, 5C"), 24);
+
+    // 6 for 15s
+    // 3 for run (J, Q, K)
+    test(Score("KD, 2D, JS, QD, 5H"), 9);
+
+    // 2 for the 5 card 15
+    // 5 for the run of 5
+    test(Score("AD, 2H, 3C, 4D, 5H"), 7);
 
     return 0;
 }
