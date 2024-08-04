@@ -135,8 +135,9 @@ vector<vector<Card>> CombCards(const vector<Card>& hand, int K)
     return results;
 }
 
-void Dump(const char* context, const vector<Card>& cards)
+void Dump(const char* context, int score, const vector<Card>& cards)
 {
+    if (score) cout << score << " for ";
     cout << context << ": ";
     ranges::for_each(cards, [&](const Card& c){ cout << c << ','; });
     cout << '\n';
@@ -146,7 +147,7 @@ int Fifteens(const vector<Card>& cards)
 {
     if (accumulate(cards.begin(), cards.end(), 0) == 15)
     {
-        Dump("15", cards);
+        Dump("15", 2, cards);
         return 2;
     }
     return 0;
@@ -156,7 +157,7 @@ int Pairs(const vector<Card>& cards)    // assumes size of 2
 {
     if (cards[0].rank == cards[1].rank)
     {
-        Dump("Pair", cards);
+        Dump("pair", 2, cards);
         return 2;
     }
     return 0;
@@ -171,8 +172,9 @@ int Runs(const vector<Card>& cards)    // should be 3 or more
     }
     if (run)
     {
-        Dump("Run", cards);
-        return static_cast<int>(cards.size());
+        const auto score = static_cast<int>(cards.size());
+        Dump("run", score, cards);
+        return score;
     }
     return 0;
 }
@@ -184,27 +186,53 @@ int Score(string_view s)
 
     auto hand = Hand(s);
 
-Dump("Hand", hand);
+Dump("Hand", 0, hand);
 
-    auto pairs = CombCards(hand, 2);
-    for (const auto& p : pairs)
+    bool foundARunOf5{};
+    ranges::sort(hand);
+    score += Fifteens(hand);
+    const auto run = Runs(hand);
+    score += run;
+    if (run) foundARunOf5 = true;
+    // todo: flush
+
+    bool foundARunOf4{};
+    auto quads = CombCards(hand, 4);
+    for (auto& q : quads)
     {
-Dump("2", p);
-        score += Pairs(p);
-        score += Fifteens(p);
+        ranges::sort(q);
+Dump("   4", 0, q);
+        score += Fifteens(q);
+        if (!foundARunOf5)
+        {
+            const auto run = Runs(q);
+            score += run;
+            if (run) foundARunOf4 = true;
+        }
+        // todo: flush. Need same "found 5" block logic
+        // Pairs scored later
     }
 
     auto triples = CombCards(hand, 3);
     for (auto& t : triples)
     {
         ranges::sort(t);
-Dump("3", t);
+Dump("   3", 0, t);
         score += Fifteens(t);
-        score += Runs(t);
-        // Don't need to score the pairs because they will already have been done.
+        if (!foundARunOf4 && !foundARunOf5)
+        {
+            score += Runs(t);
+        }
+        // Pairs scored later
     }
 
-    // If we find a run of 4, only add 1, because the 3 will already have been scored.
+    auto pairs = CombCards(hand, 2);
+    for (const auto& p : pairs)
+    {
+Dump("   2", 0, p);
+        score += Pairs(p);
+        score += Fifteens(p);
+    }
 
     return score;
 }
