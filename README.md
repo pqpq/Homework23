@@ -31,8 +31,8 @@ Total 24.
 
 My notes:
 
-https://en.wikipedia.org/wiki/Rules_of_cribbage#The_show
-https://cribbagecalculator.com/
+* https://en.wikipedia.org/wiki/Rules_of_cribbage#The_show
+* https://cribbagecalculator.com/
 
 My environment:
 ```
