@@ -24,13 +24,10 @@
 
 #include <algorithm>
 #include <array>
-#include <cctype>
 #include <iostream>
 #include <map>
 #include <numeric>
 #include <ranges>
-#include <set>
-#include <utility>
 #include <vector>
 
 using namespace std;
@@ -80,6 +77,7 @@ ostream& operator<<(ostream& o, const Card& c)
     return o << c.printable;
 }
 
+// So that we can std::accumulate() Cards.
 int operator+(int a, const Card& b)
 {
     return a + b.value;
@@ -154,8 +152,9 @@ int Fifteens(const vector<Card>& cards)
     return 0;
 }
 
-int Pairs(const vector<Card>& cards)    // assumes size of 2
+int Pairs(const vector<Card>& cards)
 {
+    if (cards.size() != 2) return 0;
     if (cards[0].rank == cards[1].rank)
     {
         Dump("pair", 2, cards);
@@ -164,8 +163,9 @@ int Pairs(const vector<Card>& cards)    // assumes size of 2
     return 0;
 }
 
-int Runs(const vector<Card>& cards)    // should be 3 or more
+int Runs(const vector<Card>& cards)
 {
+    if (cards.size() < 3) return 0;
     bool run = true;
     for (size_t i = 1; i < cards.size(); ++i)
     {
@@ -182,8 +182,9 @@ int Runs(const vector<Card>& cards)    // should be 3 or more
 
 /// @todo Needs to reject flush of 4 if starter card is included, i.e.
 /// three in the hand plus starter.
-int Flushes(const vector<Card>& cards)    // should be 4 or more
+int Flushes(const vector<Card>& cards)
 {
+    if (cards.size() < 4) return 0;
     map<char, size_t> countPerSuit;
     for (const auto& card : cards)
     {
@@ -201,13 +202,6 @@ int Flushes(const vector<Card>& cards)    // should be 4 or more
 }
 
 
-
-// This could be condensed into a loop of 5,4,3,2
-// and call all the scoring functions conditionally?
-// then one flag for found a run.
-// probably handle flushes the same way
-// only do pairs at the end.
-// If the scoring functions reject based on cards.size() can we call them all regardless? Yes. Neat.
 int Score(string_view s)
 {
     int score{};
@@ -216,50 +210,32 @@ int Score(string_view s)
 
 Dump("Hand", 0, hand);
 
-    bool foundARunOf5{};
-    ranges::sort(hand);
-    score += Fifteens(hand);
-    const auto run = Runs(hand);
-    score += run;
-    if (run) foundARunOf5 = true;
-    score += Flushes(hand);
-
-    bool foundARunOf4{};
-    auto quads = CombCards(hand, 4);
-    for (auto& q : quads)
+    bool foundARun{};
+    bool foundAFlush{};
+    for (int group : { 5, 4, 3, 2 })
     {
-        ranges::sort(q);
-//Dump("   4", 0, q);
-        score += Fifteens(q);
-        if (!foundARunOf5)
+        int runs{};
+        int flushes{};
+        auto combinations = CombCards(hand, group);
+        for (auto& cards : combinations)
         {
-            const auto run = Runs(q);
-            score += run;
-            if (run) foundARunOf4 = true;
+            ranges::sort(cards);
+            //Dump("considering", 0, cards);
+            if (!foundARun)
+            {
+                runs += Runs(cards);
+            }
+            if (!foundAFlush)
+            {
+                flushes += Flushes(cards);
+            }
+            score += Pairs(cards);
+            score += Fifteens(cards);
         }
-        // todo: flush. Need same "found 5" block logic
-        // Pairs scored later
-    }
-
-    auto triples = CombCards(hand, 3);
-    for (auto& t : triples)
-    {
-        ranges::sort(t);
-//Dump("   3", 0, t);
-        score += Fifteens(t);
-        if (!foundARunOf4 && !foundARunOf5)
-        {
-            score += Runs(t);
-        }
-        // Pairs scored later
-    }
-
-    auto pairs = CombCards(hand, 2);
-    for (const auto& p : pairs)
-    {
-//Dump("   2", 0, p);
-        score += Pairs(p);
-        score += Fifteens(p);
+        score += runs;
+        foundARun = foundARun || runs > 0;
+        score += flushes;
+        foundAFlush = foundAFlush || flushes > 0;
     }
 
     cout << "  makes " << score << '\n';
