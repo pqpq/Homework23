@@ -26,6 +26,7 @@
 #include <array>
 #include <cctype>
 #include <iostream>
+#include <map>
 #include <numeric>
 #include <ranges>
 #include <set>
@@ -179,6 +180,28 @@ int Runs(const vector<Card>& cards)    // should be 3 or more
     return 0;
 }
 
+/// @todo Needs to reject flush of 4 if starter card is included, i.e.
+/// three in the hand plus starter.
+int Flushes(const vector<Card>& cards)    // should be 4 or more
+{
+    map<char, size_t> countPerSuit;
+    for (const auto& card : cards)
+    {
+        countPerSuit[card.suit]++;
+    }
+    for (const auto& i : countPerSuit)
+    {
+        if (i.second > 3)
+        {
+            Dump("flush", i.second, cards);
+            return i.second;
+        }
+    }
+    return 0;
+}
+
+
+
 // This could be condensed into a loop of 5,4,3,2
 // and call all the scoring functions conditionally?
 // then one flag for found a run.
@@ -199,7 +222,7 @@ Dump("Hand", 0, hand);
     const auto run = Runs(hand);
     score += run;
     if (run) foundARunOf5 = true;
-    // todo: flush
+    score += Flushes(hand);
 
     bool foundARunOf4{};
     auto quads = CombCards(hand, 4);
@@ -272,6 +295,8 @@ int main()
     test(Score("5S, 4S, 2S, 6H, 5H"), 12);
     test(Score("7D, 3D, 10H, 5C, 3H"), 8);
 
+    // 5 card flush
+    test(Score("2H, 7H, 9H, JH, KH"), 5);
 
     return 0;
 }
