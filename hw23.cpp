@@ -179,7 +179,12 @@ int Runs(const vector<Card>& cards)    // should be 3 or more
     return 0;
 }
 
-
+// This could be condensed into a loop of 5,4,3,2
+// and call all the scoring functions conditionally?
+// then one flag for found a run.
+// probably handle flushes the same way
+// only do pairs at the end.
+// If the scoring functions reject based on cards.size() can we call them all regardless? Yes. Neat.
 int Score(string_view s)
 {
     int score{};
@@ -201,7 +206,7 @@ Dump("Hand", 0, hand);
     for (auto& q : quads)
     {
         ranges::sort(q);
-Dump("   4", 0, q);
+//Dump("   4", 0, q);
         score += Fifteens(q);
         if (!foundARunOf5)
         {
@@ -217,7 +222,7 @@ Dump("   4", 0, q);
     for (auto& t : triples)
     {
         ranges::sort(t);
-Dump("   3", 0, t);
+//Dump("   3", 0, t);
         score += Fifteens(t);
         if (!foundARunOf4 && !foundARunOf5)
         {
@@ -229,11 +234,12 @@ Dump("   3", 0, t);
     auto pairs = CombCards(hand, 2);
     for (const auto& p : pairs)
     {
-Dump("   2", 0, p);
+//Dump("   2", 0, p);
         score += Pairs(p);
         score += Fifteens(p);
     }
 
+    cout << "  makes " << score << '\n';
     return score;
 }
 
@@ -261,6 +267,11 @@ int main()
     // 2 for the 5 card 15
     // 5 for the run of 5
     test(Score("AD, 2H, 3C, 4D, 5H"), 7);
+
+    // Some examples from the https://en.wikipedia.org/wiki/Rules_of_cribbage#The_show
+    test(Score("5S, 4S, 2S, 6H, 5H"), 12);
+    test(Score("7D, 3D, 10H, 5C, 3H"), 8);
+
 
     return 0;
 }
