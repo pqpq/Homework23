@@ -21,8 +21,11 @@ You score for each and every combination of two cards that make a pair, of two o
 Example: ♠6, ♠5, ♥4, ♦4, ♣5.
 
 Four ways of making 15 scores 8 (♠6 ♠5 ♥4; ♠6 ♠5 ♦4; ♠6 ♣5 ♥4; ♠6, ♣5, ♦4).
+
 Four runs of 6 5 4 score 12 (♠6 ♠5 ♥4; ♠6 ♠5 ♦4; ♠6 ♣5 ♥4; ♠6 ♣5 ♦4).
+
 Two pairs score 4 (♥4, ♦4 and ♠5, ♣5).
+
 Total 24.
 
 

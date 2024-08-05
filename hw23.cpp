@@ -274,5 +274,9 @@ int main()
     // 5 card flush
     test(Score("2H, 7H, 9H, JH, KH"), 5);
 
+    // need test for 4 card flushes, rejecting case where one is missing in hand
+
+    // need test for his nob
+
     return 0;
 }
