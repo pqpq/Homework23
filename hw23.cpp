@@ -208,6 +208,20 @@ int Flushes(const vector<Card>& cards)
     return 0;
 }
 
+int HisNob(const vector<Card>& cards)
+{
+    const auto lookingFor = string("J").append(1, cards.front().suit);
+    for (auto i = cards.begin() + 1; i != cards.end(); ++i)
+    {
+        if (i->printable == lookingFor)
+        {
+            Dump("his nob", 1, cards);
+            return 1;
+        }
+    }
+    return 0;
+}
+
 // Score the hand represented by 's'. Start card ('turn up') is first.
 int Score(string_view s)
 {
@@ -244,6 +258,7 @@ Dump("Hand", 0, hand);
         score += flushes;
         foundAFlush = foundAFlush || flushes > 0;
     }
+    score += HisNob(hand);
 
     cout << "  makes " << score << '\n';
     return score;
@@ -279,18 +294,20 @@ int main()
     test(Score("7D, 3D, 10H, 5C, 3H"), 8);
 
     // 5 card flush
-    test(Score("2H, 7H, 9H, JH, KH"), 5);
+    test(Score("2H, 7H, 9H, QH, KH"), 5);
 
     // 4 card flush in the hand - valid.
-    test(Score("2D, 7H, 9H, JH, KH"), 4);
+    test(Score("2D, 7H, 9H, QH, KH"), 4);
 
     // Invalid 4 card flush - 3 in the hand and the turn up.
-    test(Score("2H, 7D, 9H, JH, KH"), 0);
-    test(Score("2H, 7H, 9D, JH, KH"), 0);
-    test(Score("2H, 7H, 9H, JD, KH"), 0);
-    test(Score("2H, 7H, 9H, JH, KD"), 0);
+    test(Score("2H, 7D, 9H, QH, KH"), 0);
+    test(Score("2H, 7H, 9D, QH, KH"), 0);
+    test(Score("2H, 7H, 9H, QD, KH"), 0);
+    test(Score("2H, 7H, 9H, QH, KD"), 0);
 
-    // need test for his nob
+    // One for his nob
+    test(Score("2H, 7D, 9D, JH, KD"), 1 );
+    test(Score("JH, 7D, 9D, 2H, KD"), 0 );  // No nob if turnup is a Jack
 
     return 0;
 }
