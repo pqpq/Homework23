@@ -134,20 +134,22 @@ vector<vector<Card>> CombCards(const vector<Card>& hand, int K)
     return results;
 }
 
-void Dump(const char* context, int score, const vector<Card>& cards)
+// Print human readable information about 'score' and return 'score', and the
+// one stop shop for turning off output.
+int Announce(const char* context, int score, const vector<Card>& cards)
 {
     if (score) cout << score << " for ";
     cout << context << ": ";
     ranges::for_each(cards, [&](const Card& c){ cout << c << ','; });
     cout << '\n';
+    return score;
 }
 
 int Fifteens(const vector<Card>& cards)
 {
     if (accumulate(cards.begin(), cards.end(), 0) == 15)
     {
-        Dump("15", 2, cards);
-        return 2;
+        return Announce("15", 2, cards);
     }
     return 0;
 }
@@ -157,8 +159,7 @@ int Pairs(const vector<Card>& cards)
     if (cards.size() != 2) return 0;
     if (cards[0].rank == cards[1].rank)
     {
-        Dump("pair", 2, cards);
-        return 2;
+        return Announce("pair", 2, cards);
     }
     return 0;
 }
@@ -174,8 +175,7 @@ int Runs(const vector<Card>& cards)
     if (run)
     {
         const auto score = static_cast<int>(cards.size());
-        Dump("run", score, cards);
-        return score;
+        return Announce("run", score, cards);
     }
     return 0;
 }
@@ -201,8 +201,7 @@ int Flushes(const vector<Card>& cards)
                     return 0;
                 }
             }
-            Dump("flush", i.second, cards);
-            return i.second;
+            return Announce("flush", i.second, cards);
         }
     }
     return 0;
@@ -215,8 +214,7 @@ int HisNob(const vector<Card>& cards)
     {
         if (i->printable == lookingFor)
         {
-            Dump("his nob", 1, cards);
-            return 1;
+            return Announce("his nob", 1, cards);
         }
     }
     return 0;
@@ -229,7 +227,7 @@ int Score(string_view s)
 
     auto hand = Hand(s);
 
-Dump("Hand", 0, hand);
+Announce("Hand", 0, hand);
 
     bool foundARun{};
     bool foundAFlush{};
@@ -241,7 +239,7 @@ Dump("Hand", 0, hand);
         for (auto& cards : combinations)
         {
             ranges::sort(cards);
-            //Dump("considering", 0, cards);
+            //Announce("considering", 0, cards);
             if (!foundARun)
             {
                 runs += Runs(cards);
@@ -271,9 +269,7 @@ int main()
     // 12 for 4 5s (6 sets of pairs)
     test(Score("5S, 5C, 5H, 5D, 10C"), 28);
 
-    // 4 for 15s (J+5, J+2+3)
-    // 3 for run (1, 2, 3)
-    test(Score("JS, 5C, AH, 2D, 3C"), 7);
+    test(Score("JS, 5C, AH, 2D, 3C"), 7);   // 4 for 15s (J+5, J+2+3), 3 for run (1, 2, 3)
 
     // Example from the article
     // Four ways of making 15 scores 8 (♠6 ♠5 ♥4; ♠6 ♠5 ♦4; ♠6 ♣5 ♥4; ♠6, ♣5, ♦4).
@@ -281,33 +277,25 @@ int main()
     // Two pairs score 4 (♥4, ♦4 and ♠5, ♣5). Total 24.
     test(Score("6S, 5S, 4H, 4D, 5C"), 24);
 
-    // 6 for 15s
-    // 3 for run (J, Q, K)
-    test(Score("KD, 2D, JS, QD, 5H"), 9);
-
-    // 2 for the 5 card 15
-    // 5 for the run of 5
-    test(Score("AD, 2H, 3C, 4D, 5H"), 7);
+    test(Score("KD, 2D, JS, QD, 5H"), 9);   // 6 for 15s, 3 for run (J, Q, K)
+    test(Score("AD, 2H, 3C, 4D, 5H"), 7);   // 2 for the 5 card 15, 5 for the run of 5
 
     // Some examples from the https://en.wikipedia.org/wiki/Rules_of_cribbage#The_show
     test(Score("5S, 4S, 2S, 6H, 5H"), 12);
     test(Score("7D, 3D, 10H, 5C, 3H"), 8);
 
-    // 5 card flush
-    test(Score("2H, 7H, 9H, QH, KH"), 5);
-
-    // 4 card flush in the hand - valid.
-    test(Score("2D, 7H, 9H, QH, KH"), 4);
-
-    // Invalid 4 card flush - 3 in the hand and the turn up.
+    test(Score("2H, 7H, 9H, QH, KH"), 5);   // 5 card flush
+    test(Score("2D, 7H, 9H, QH, KH"), 4);   // 4 card flush in the hand - valid.
+    // Invalid 4 card flushes - 3 in the hand and the turn up.
     test(Score("2H, 7D, 9H, QH, KH"), 0);
     test(Score("2H, 7H, 9D, QH, KH"), 0);
     test(Score("2H, 7H, 9H, QD, KH"), 0);
     test(Score("2H, 7H, 9H, QH, KD"), 0);
 
-    // One for his nob
-    test(Score("2H, 7D, 9D, JH, KD"), 1 );
-    test(Score("JH, 7D, 9D, 2H, KD"), 0 );  // No nob if turnup is a Jack
+    test(Score("2H, 7D, 9D, JH, KD"), 1);   // One for his nob
+    test(Score("JH, 7D, 9D, 2H, KD"), 0);   // No nob if turnup is a Jack
+
+    test(Score("5H, 5D, 5S, 5C, JH"), 29);  // Max
 
     return 0;
 }
