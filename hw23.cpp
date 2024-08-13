@@ -180,8 +180,6 @@ int Runs(const vector<Card>& cards)
     return 0;
 }
 
-/// @todo Needs to reject flush of 4 if starter card is included, i.e.
-/// three in the hand plus starter.
 int Flushes(const vector<Card>& cards)
 {
     if (cards.size() < 4) return 0;
@@ -194,6 +192,15 @@ int Flushes(const vector<Card>& cards)
     {
         if (i.second > 3)
         {
+            if (i.second == 4)
+            {
+                // Reject the flush if the turn up is involved, because this
+                // implies on of the others isn't of the same suit.
+                if (i.first == cards.front().suit)
+                {
+                    return 0;
+                }
+            }
             Dump("flush", i.second, cards);
             return i.second;
         }
@@ -201,7 +208,7 @@ int Flushes(const vector<Card>& cards)
     return 0;
 }
 
-
+// Score the hand represented by 's'. Start card ('turn up') is first.
 int Score(string_view s)
 {
     int score{};
@@ -274,7 +281,14 @@ int main()
     // 5 card flush
     test(Score("2H, 7H, 9H, JH, KH"), 5);
 
-    // need test for 4 card flushes, rejecting case where one is missing in hand
+    // 4 card flush in the hand - valid.
+    test(Score("2D, 7H, 9H, JH, KH"), 4);
+
+    // Invalid 4 card flush - 3 in the hand and the turn up.
+    test(Score("2H, 7D, 9H, JH, KH"), 0);
+    test(Score("2H, 7H, 9D, JH, KH"), 0);
+    test(Score("2H, 7H, 9H, JD, KH"), 0);
+    test(Score("2H, 7H, 9H, JH, KD"), 0);
 
     // need test for his nob
 
