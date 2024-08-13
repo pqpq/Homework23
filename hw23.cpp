@@ -68,13 +68,15 @@ struct Card
     char suit{};
     // these are after rank and suit so they aren't involved in operator<=>
     int value{};
-    string_view printable;
+    string_view face;
     auto operator<=>(const Card& other) const = default;
+
+    string Printable() const { return string(face).append(1, suit); }
 };
 
 ostream& operator<<(ostream& o, const Card& c)
 {
-    return o << c.printable;
+    return o << c.Printable();
 }
 
 // So that we can std::accumulate() Cards.
@@ -85,37 +87,39 @@ int operator+(int a, const Card& b)
 
 vector<Card> Hand(string_view s)
 {
-    constexpr array<string_view, 13> ranks =
-    {
-        "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" 
-    };
+    constexpr array<Card, 13> cards
+    {{
+        {  1, '?',  1,  "A"sv },
+        {  2, '?',  2,  "2"sv },
+        {  3, '?',  3,  "3"sv },
+        {  4, '?',  4,  "4"sv },
+        {  5, '?',  5,  "5"sv },
+        {  6, '?',  6,  "6"sv },
+        {  7, '?',  7,  "7"sv },
+        {  8, '?',  8,  "8"sv },
+        {  9, '?',  9,  "9"sv },
+        { 10, '?', 10, "10"sv },
+        { 11, '?', 10,  "J"sv },
+        { 12, '?', 10,  "Q"sv },
+        { 13, '?', 10,  "K"sv }
+    }};
 
-    vector<Card> cards;
+    vector<Card> hand;
     while (!s.empty())
     {
-        bool found{};
-        for (size_t i = 0; i < ranks.size(); ++i)
+        int consume = 1;
+        ranges::for_each(cards, [&](const auto& p)
         {
-            if (s.starts_with(ranks[i]))
+            if (s.starts_with(p.face))
             {
-                const auto rank = static_cast<int>(i + 1);
-                cards.push_back({ .rank = rank });
-                cards.back().printable = s.substr(0, ranks[i].size() + 1); // include the suit
-                s = s.substr(ranks[i].size());
-                cards.back().suit = s[0];
-                cards.back().value = min(10, rank);
-                s.remove_prefix(1);
-                found = true;
-                break;
+                hand.push_back(p);
+                hand.back().suit = s[p.face.size()];
+                consume = p.face.size() + 1;
             }
-        }
-
-        if (!found)
-        {
-            s.remove_prefix(1);
-        }
+        });
+        s.remove_prefix(consume);
     }
-    return cards;
+    return hand;
 }
 
 vector<vector<Card>> CombCards(const vector<Card>& hand, int K)
@@ -205,12 +209,12 @@ int Flushes(const vector<Card>& cards)
     return 0;
 }
 
-int HisNob(const vector<Card>& cards)
+int HisNobs(const vector<Card>& cards)
 {
-    const auto lookingFor = string("J").append(1, cards.front().suit);
+    const auto lookingFor = Card{ .suit = cards.front().suit, .face = "J" }.Printable();
     for (auto i = cards.begin() + 1; i != cards.end(); ++i)
     {
-        if (i->printable == lookingFor)
+        if (i->Printable() == lookingFor)
         {
             return Announce("his nob", 1, cards);
         }
@@ -254,7 +258,7 @@ Announce("Hand", 0, hand);
         score += flushes;
         foundAFlush = foundAFlush || flushes > 0;
     }
-    score += HisNob(hand);
+    score += HisNobs(hand);
 
     cout << "  makes " << score << '\n';
     return score;
@@ -290,8 +294,8 @@ int main()
     test(Score("2H, 7H, 9H, QD, KH"), 0);
     test(Score("2H, 7H, 9H, QH, KD"), 0);
 
-    test(Score("2H, 7D, 9D, JH, KD"), 1);   // One for his nob
-    test(Score("JH, 7D, 9D, 2H, KD"), 0);   // No nob if turnup is a Jack
+    test(Score("2H, 7D, 9D, JH, KD"), 1);   // One for his nobs
+    test(Score("JH, 7D, 9D, 2H, KD"), 0);   // No nobs if turnup is a Jack
 
     test(Score("5H, 5D, 5S, 5C, JH"), 29);  // Max
 

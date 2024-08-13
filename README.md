@@ -49,12 +49,11 @@ mrj@ktulu:~/code/Homework23$ g++ -std=c++20 hw23.cpp && ./a.out
 
 It is quite a long program.
 
-The Hand() function, which turns the string representation into internal data, seems clumsy.
+Even after making the Hand() function table driven, it seems clumsy.
 We could just force the user to enter 5 separate values rather than having to split the input string for them.
-There could be a more table driven way of doing this with less code.
 
 The Card structure has redundancy. I tried to keep it data only, but if we have a getter for value, rather than a member,
-we could calculate it from rank on demand. 'printable' is hardly used but recreating it on demand seems wasteful.
+we could calculate it from rank on demand.
 
 The flags for whether we have found a run or flush are annoying. I couldn't think of a neater way of doing this.
 
