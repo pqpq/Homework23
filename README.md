@@ -29,19 +29,47 @@ Two pairs score 4 (♥4, ♦4 and ♠5, ♣5).
 Total 24.
 
 
-My notes:
+### Some links
 
 * https://en.wikipedia.org/wiki/Rules_of_cribbage#The_show
 * https://cribbagecalculator.com/
 
-My environment:
+### My environment
 ```
 mrj@ktulu:~/code/Homework23$ gcc --version
 gcc (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0
 ```
 
-My command line:
+### My command line
 ```
 mrj@ktulu:~/code/Homework23$ g++ -std=c++20 hw23.cpp && ./a.out
 ```
+
+### Thoughts
+
+It is quite a long program.
+
+The Hand() function, which turns the string representation into internal data, seems clumsy.
+We could just force the user to enter 5 separate values rather than having to split the input string for them.
+There could be a more table driven way of doing this with less code.
+
+The Card structure has redundancy. I tried to keep it data only, but if we have a getter for value, rather than a member,
+we could calculate it from rank on demand. 'printable' is hardly used but recreating it on demand seems wasteful.
+
+The flags for whether we have found a run or flush are annoying. I couldn't think of a neater way of doing this.
+
+In early versions of the Score() function I explicitly handled groups of 2, 3, 4 then 5 cards,
+only calling scoring functions that were valid for those numbers of cards.
+This was lengthy and repetitive. It was much simpler to condense this into a loop over a list of the group sizes, then enforce the preconditions in
+the scoring functions.
+
+The Announce() function, which started life as raw cout debug printing, evolved into a multipurpose tool, and ended up being able to announce the score almost the same way a human would when scoring a real life game. An unexpected bonus.
+
+As usual the code evolved through TDD, resulting in a good set of tests that prove it works. And these tests provide a solid framework within which to refactor.
+
+Apart from the Card data type, the code isn't very object oriented. Putting all the scoring logic inside a class might simplify things, and this is the next big step to try.
+
+I tried to use STL algorithms and ranges where possible but there are still too many C style for loops. They are a code smell that indicates 'should have tried harder'.
+
+
 
