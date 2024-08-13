@@ -83,16 +83,14 @@ int operator+(int a, const Card& b)
     return a + b.value;
 }
 
-
 vector<Card> Hand(string_view s)
 {
-    vector<Card> cards;
-
     constexpr array<string_view, 13> ranks =
     {
         "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" 
     };
 
+    vector<Card> cards;
     while (!s.empty())
     {
         bool found{};
@@ -195,7 +193,7 @@ int Flushes(const vector<Card>& cards)
             if (i.second == 4)
             {
                 // Reject the flush if the turn up is involved, because this
-                // implies on of the others isn't of the same suit.
+                // implies one of the others isn't of the same suit.
                 if (i.first == cards.front().suit)
                 {
                     return 0;
