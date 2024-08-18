@@ -50,10 +50,9 @@ mrj@ktulu:~/code/Homework23$ g++ -std=c++20 hw23.cpp && ./a.out
 It is quite a long program.
 
 Even after making the Hand() function table driven, it seems clumsy.
-We could just force the user to enter 5 separate values rather than having to split the input string for them.
 
 The Card structure has redundancy. I tried to keep it data only, but if we have a getter for value, rather than a member,
-we could calculate it from rank on demand.
+we could calculate it from rank on demand. This is only used when finding 15s, so it would offer no benefit.
 
 The flags for whether we have found a run or flush are annoying. I couldn't think of a neater way of doing this.
 
