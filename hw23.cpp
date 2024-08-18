@@ -74,6 +74,8 @@ struct Card
     string Printable() const { return string(face).append(1, suit); }
 };
 
+using Cards = vector<Card>;
+
 ostream& operator<<(ostream& o, const Card& c)
 {
     return o << c.Printable();
@@ -85,7 +87,7 @@ int operator+(int a, const Card& b)
     return a + b.value;
 }
 
-vector<Card> Hand(string_view s)
+Cards Hand(string_view s)
 {
     constexpr array<Card, 13> cards
     {{
@@ -104,7 +106,7 @@ vector<Card> Hand(string_view s)
         { 13, '?', 10,  "K"sv }
     }};
 
-    vector<Card> hand;
+    Cards hand;
     while (!s.empty())
     {
         int consume = 1;
@@ -122,14 +124,14 @@ vector<Card> Hand(string_view s)
     return hand;
 }
 
-vector<vector<Card>> CombCards(const vector<Card>& hand, int K)
+vector<Cards> CombCards(const Cards& hand, int K)
 {
-    vector<vector<Card>> results;
+    vector<Cards> results;
 
     const auto combinations = Comb(hand.size(), K);
     for(const auto& c : combinations)
     {
-        vector<Card> cards;
+        Cards cards;
         ranges::transform(c, back_inserter(cards), [&](int i){ return hand[i]; });
         results.push_back(cards);
     }
@@ -138,7 +140,7 @@ vector<vector<Card>> CombCards(const vector<Card>& hand, int K)
 
 // Print human readable information about 'score' and return 'score', and the
 // one stop shop for turning off output.
-int Announce(const char* context, int score, const vector<Card>& cards)
+int Announce(const char* context, int score, const Cards& cards)
 {
     if (score) cout << score << " for ";
     cout << context << ": ";
@@ -147,7 +149,7 @@ int Announce(const char* context, int score, const vector<Card>& cards)
     return score;
 }
 
-int Fifteens(const vector<Card>& cards)
+int Fifteens(const Cards& cards)
 {
     if (accumulate(cards.begin(), cards.end(), 0) == 15)
     {
@@ -156,7 +158,7 @@ int Fifteens(const vector<Card>& cards)
     return 0;
 }
 
-int Pairs(const vector<Card>& cards)
+int Pairs(const Cards& cards)
 {
     if (cards.size() != 2) return 0;
     if (cards[0].rank == cards[1].rank)
@@ -166,7 +168,7 @@ int Pairs(const vector<Card>& cards)
     return 0;
 }
 
-int Runs(const vector<Card>& cards)
+int Runs(const Cards& cards)
 {
     if (cards.size() < 3) return 0;
     bool run = true;
@@ -182,7 +184,7 @@ int Runs(const vector<Card>& cards)
     return 0;
 }
 
-int Flushes(const vector<Card>& cards)
+int Flushes(const Cards& cards)
 {
     if (cards.size() < 4) return 0;
     map<char, size_t> countPerSuit;
@@ -209,7 +211,7 @@ int Flushes(const vector<Card>& cards)
     return 0;
 }
 
-int HisNobs(const vector<Card>& cards)
+int HisNobs(const Cards& cards)
 {
     const auto lookingFor = Card{ .suit = cards.front().suit, .face = "J" }.Printable();
     for (auto i = cards.begin() + 1; i != cards.end(); ++i)
