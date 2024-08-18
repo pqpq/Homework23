@@ -187,23 +187,19 @@ int Flushes(const Cards& cards)
     if (cards.size() < 4) return 0;
     map<char, size_t> countPerSuit;
     ranges::for_each(cards, [&](const auto& card){ countPerSuit[card.suit]++; });
-    for (const auto& i : countPerSuit)
+    const auto potentialFlush = ranges::find_if(countPerSuit, [](const auto& i){ return i.second > 3; });
+    if (potentialFlush == countPerSuit.end())
     {
-        if (i.second > 3)
-        {
-            if (i.second == 4)
-            {
-                // Reject the flush if the turn up is involved, because this
-                // implies one of the others isn't of the same suit.
-                if (i.first == cards.front().suit)
-                {
-                    return 0;
-                }
-            }
-            return Announce("flush", i.second, cards);
-        }
+        return 0;
     }
-    return 0;
+    // Reject a 4 card flush if the turn up is involved, because this implies
+    // one of the others isn't of the same suit.
+    if (potentialFlush->second == 4 && potentialFlush->first == cards.front().suit)
+    {
+        return 0;
+    }
+
+    return Announce("flush", potentialFlush->second, cards);
 }
 
 int HisNobs(const Cards& cards)
