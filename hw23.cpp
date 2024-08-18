@@ -66,7 +66,7 @@ struct Card
 {
     int rank{};
     char suit{};
-    // these are after rank and suit so they aren't involved in operator<=>
+    // These are after rank and suit so they don't have to be involved in operator<=>
     int value{};
     string_view face;
     auto operator<=>(const Card& other) const = default;
@@ -171,17 +171,15 @@ int Pairs(const Cards& cards)
 int Runs(const Cards& cards)
 {
     if (cards.size() < 3) return 0;
-    bool run = true;
-    for (size_t i = 1; i < cards.size(); ++i)
+    for (auto i = cards.begin(); i != cards.end() - 1; ++i)
     {
-        run = run && cards[i].rank == cards[i-1].rank + 1;
+        if (i->rank != (i + 1)->rank - 1)
+        {
+            return 0;
+        }
     }
-    if (run)
-    {
-        const auto score = static_cast<int>(cards.size());
-        return Announce("run", score, cards);
-    }
-    return 0;
+    const auto score = static_cast<int>(cards.size());
+    return Announce("run", score, cards);
 }
 
 int Flushes(const Cards& cards)
@@ -278,7 +276,7 @@ int main()
     // Two pairs score 4 (♥4, ♦4 and ♠5, ♣5). Total 24.
     test(Score("6S, 5S, 4H, 4D, 5C"), 24);
 
-    test(Score("2S, 2C, 2H, 2D, 7H"), 13);  // 12 for four of a kind, and 2 for a 5 card 15.
+    test(Score("2S, 2C, 2H, 2D, 7H"), 14);  // 12 for four of a kind, and 2 for a 5 card 15.
 
     test(Score("KD, 2D, JS, QD, 5H"), 9);   // 6 for 15s, 3 for run (J, Q, K)
     test(Score("AD, 2H, 3C, 4D, 5H"), 7);   // 2 for the 5 card 15, 5 for the run of 5
