@@ -188,10 +188,7 @@ int Flushes(const Cards& cards)
 {
     if (cards.size() < 4) return 0;
     map<char, size_t> countPerSuit;
-    for (const auto& card : cards)
-    {
-        countPerSuit[card.suit]++;
-    }
+    ranges::for_each(cards, [&](const auto& card){ countPerSuit[card.suit]++; });
     for (const auto& i : countPerSuit)
     {
         if (i.second > 3)
@@ -214,9 +211,9 @@ int Flushes(const Cards& cards)
 int HisNobs(const Cards& cards)
 {
     const auto starter = cards.front();
-    for (auto i = cards.begin() + 1; i != cards.end(); ++i)
+    for (auto card = cards.begin() + 1; card != cards.end(); ++card)
     {
-        if (i->face == "J" && i->suit == starter.suit)
+        if (card->face == "J" && card->suit == starter.suit)
         {
             return Announce("his nob", 1, cards);
         }
