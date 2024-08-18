@@ -213,10 +213,10 @@ int Flushes(const Cards& cards)
 
 int HisNobs(const Cards& cards)
 {
-    const auto lookingFor = Card{ .suit = cards.front().suit, .face = "J" }.Printable();
+    const auto starter = cards.front();
     for (auto i = cards.begin() + 1; i != cards.end(); ++i)
     {
-        if (i->Printable() == lookingFor)
+        if (i->face == "J" && i->suit == starter.suit)
         {
             return Announce("his nob", 1, cards);
         }
@@ -231,7 +231,7 @@ int Score(string_view s)
 
     auto hand = Hand(s);
 
-Announce("Hand", 0, hand);
+    Announce("Hand", 0, hand);
 
     bool foundARun{};
     bool foundAFlush{};
@@ -280,6 +280,8 @@ int main()
     // Four runs of 6 5 4 score 12 (♠6 ♠5 ♥4; ♠6 ♠5 ♦4; ♠6 ♣5 ♥4; ♠6 ♣5 ♦4).
     // Two pairs score 4 (♥4, ♦4 and ♠5, ♣5). Total 24.
     test(Score("6S, 5S, 4H, 4D, 5C"), 24);
+
+    test(Score("2S, 2C, 2H, 2D, 7H"), 13);  // 12 for four of a kind, and 2 for a 5 card 15.
 
     test(Score("KD, 2D, JS, QD, 5H"), 9);   // 6 for 15s, 3 for run (J, Q, K)
     test(Score("AD, 2H, 3C, 4D, 5H"), 7);   // 2 for the 5 card 15, 5 for the run of 5
