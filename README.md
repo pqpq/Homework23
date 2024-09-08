@@ -47,9 +47,7 @@ mrj@ktulu:~/code/Homework23$ g++ -std=c++20 hw23.cpp && ./a.out
 
 ### Thoughts
 
-It is quite a long program.
-
-Even after making the Hand() function table driven, it seems clumsy.
+It is quite a long program. Even after making the Hand() function table driven, it seems clumsy.
 
 The Card structure has redundancy. I tried to keep it data only, but if we have a getter for value, rather than a member,
 we could calculate it from rank on demand. This is only used when finding 15s, so it would offer no benefit.
@@ -65,9 +63,11 @@ The Announce() function, which started life as raw cout debug printing, evolved 
 
 As usual the code evolved through TDD, resulting in a good set of tests that prove it works. And these tests provide a solid framework within which to refactor.
 
-Apart from the Card data type, the code isn't very object oriented. Putting all the scoring logic inside a class might simplify things, and this is the next big step to try.
+Apart from the Card data type, the code isn't very object oriented. Putting all the scoring logic inside a class might simplify things, but a brief experiment showed this was just shuffling the existing code around and had little benefit.
 
 I tried to use STL algorithms and ranges where possible but there are still too many C style for loops. They are a code smell that indicates 'should have tried harder'.
+
+It would be possible to use our knowledge of how groups of cards are scored to hard code all the permutations that need to be evaluated for the different scoring functions. This would remove the need for all the code for finding combinations. The simples example is scoring flushes: we only really need to consider 2 combinations of cards - all 5, and the 4 excluding the start card.
 
 
 
